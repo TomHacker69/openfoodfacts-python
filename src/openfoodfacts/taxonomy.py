@@ -141,7 +141,7 @@ class TaxonomyNode:
             self.synonyms = {}
 
     def is_child_of(self, item: "TaxonomyNode") -> bool:
-        """Return True if `item` is a child of `self` in the taxonomy."""
+        """Return True if `self` is a child of `item` in the taxonomy."""
         if not self.parents:
             return False
 
@@ -339,7 +339,7 @@ class Taxonomy:
 
         if node is None:
             if raises:
-                raise ValueError("unknown id in taxonomy: %s", node)
+                raise ValueError(f"unknown id in taxonomy: {item}")
             else:
                 return False
 
@@ -369,7 +369,7 @@ class Taxonomy:
 
         if node is None:
             if raises:
-                raise ValueError("unknown id in taxonomy: %s", node)
+                raise ValueError(f"unknown id in taxonomy: {item}")
             else:
                 return False
 

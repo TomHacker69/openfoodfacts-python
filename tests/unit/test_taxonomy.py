@@ -1,7 +1,6 @@
 import re
 
 import pytest
-
 from openfoodfacts.taxonomy import (
     Taxonomy,
     TaxonomyNode,
@@ -197,7 +196,7 @@ class TestTaxonomy:
         assert taxonomy.is_child_of_any(item, candidates) is output
 
     def test_is_child_of_any_unknown_item(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="unknown id in taxonomy: unknown-id"):
             label_taxonomy.is_child_of_any("unknown-id", set())
 
     @pytest.mark.parametrize(
@@ -227,7 +226,7 @@ class TestTaxonomy:
         assert taxonomy.is_parent_of_any(item, candidates) is output
 
     def test_is_parent_of_any_unknown_item(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="unknown id in taxonomy: unknown-id"):
             label_taxonomy.is_parent_of_any("unknown-id", set())
 
     @pytest.mark.parametrize(
