@@ -578,12 +578,12 @@ def create_brand_taxonomy_mapping(taxonomy: Taxonomy) -> Dict[str, str]:
     mapping = {}
     for node in taxonomy.iter_nodes():
         unprefixed_key = node.id
+        prefix = None
         if is_prefixed_value(node.id):
             prefix = node.id[:2]
             unprefixed_key = node.id[3:]
-        mapping[unprefixed_key] = node.names.get(
-            "xx", node.names.get("en", node.names.get(prefix, unprefixed_key))
-        )
+        fallback = node.names.get(prefix, unprefixed_key) if prefix else unprefixed_key
+        mapping[unprefixed_key] = node.names.get("xx", node.names.get("en", fallback))
     return mapping
 
 

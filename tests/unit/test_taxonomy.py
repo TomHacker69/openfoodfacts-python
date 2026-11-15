@@ -1,7 +1,6 @@
 import re
 
 import pytest
-
 from openfoodfacts.taxonomy import (
     Taxonomy,
     TaxonomyNode,
@@ -166,6 +165,22 @@ class TestCreateTaxonomyMapping:
             "auchan": "Auchan",
             "mamouth": "Mamouth",
             "carefour": "carefour",
+        }
+
+    def test_create_brand_taxonomy_mapping_unprefixed_node(self):
+        # Unprefixed node as first item (avoids UnboundLocalError)
+        # and following prefixed node (avoids prefix leakage)
+        taxonomy = Taxonomy.from_dict(
+            {
+                "unprefixed-brand": {"name": {"en": "Unprefixed Brand"}},
+                "fr:prefixed-brand": {"name": {"fr": "Prefixed Brand"}},
+                "another-unprefixed": {"name": {}},
+            }
+        )
+        assert create_brand_taxonomy_mapping(taxonomy) == {
+            "unprefixed-brand": "Unprefixed Brand",
+            "prefixed-brand": "Prefixed Brand",
+            "another-unprefixed": "another-unprefixed",
         }
 
 
