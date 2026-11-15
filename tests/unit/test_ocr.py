@@ -1,8 +1,12 @@
 from typing import Optional, Tuple
 
 import pytest
-
-from openfoodfacts.ocr import OCRResult
+from openfoodfacts.ocr import (
+    Likelihood,
+    OCRResult,
+    SafeSearchAnnotation,
+    SafeSearchAnnotationLikelihood,
+)
 
 
 @pytest.mark.parametrize(
@@ -50,3 +54,20 @@ def test_get_words_in_area(
         assert words is not None
         assert len(words) == 1
         assert words[0].text.strip() == expected_text
+
+
+def test_safe_search_annotation():
+    data = {
+        "adult": "VERY_UNLIKELY",
+        "spoof": "UNLIKELY",
+        "medical": "POSSIBLE",
+        "violence": "LIKELY",
+        "racy": "VERY_LIKELY",
+    }
+    annotation = SafeSearchAnnotation(data)
+    assert annotation.adult == Likelihood.VERY_UNLIKELY
+    assert annotation.spoof == Likelihood.UNLIKELY
+    assert annotation.medical == Likelihood.POSSIBLE
+    assert annotation.violence == Likelihood.LIKELY
+    assert annotation.racy == Likelihood.VERY_LIKELY
+    assert SafeSearchAnnotationLikelihood is Likelihood

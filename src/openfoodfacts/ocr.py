@@ -1140,6 +1140,19 @@ class LabelAnnotation:
         self.description = data["description"]
 
 
+class Likelihood(enum.IntEnum):
+    UNKNOWN = 1
+    VERY_UNLIKELY = 2
+    UNLIKELY = 3
+    POSSIBLE = 4
+    LIKELY = 5
+    VERY_LIKELY = 6
+
+
+# Backward compatibility alias
+SafeSearchAnnotationLikelihood = Likelihood
+
+
 class FaceAnnotation:
     __slots__ = (
         "detection_confidence",
@@ -1169,40 +1182,11 @@ class SafeSearchAnnotation:
     __slots__ = ("adult", "spoof", "medical", "violence", "racy")
 
     def __init__(self, data: JSONType):
-        self.adult: SafeSearchAnnotationLikelihood = SafeSearchAnnotationLikelihood[
-            data["adult"]
-        ]
-        self.spoof: SafeSearchAnnotationLikelihood = SafeSearchAnnotationLikelihood[
-            data["spoof"]
-        ]
-        self.medical: SafeSearchAnnotationLikelihood = SafeSearchAnnotationLikelihood[
-            data["medical"]
-        ]
-        self.violence: SafeSearchAnnotationLikelihood = SafeSearchAnnotationLikelihood[
-            data["violence"]
-        ]
-        self.racy: SafeSearchAnnotationLikelihood = SafeSearchAnnotationLikelihood[
-            data["racy"]
-        ]
-
-
-class Likelihood(enum.IntEnum):
-    UNKNOWN = 1
-    VERY_UNLIKELY = 2
-    UNLIKELY = 3
-    POSSIBLE = 4
-    LIKELY = 5
-    VERY_LIKELY = 6
-
-
-# This class should be deleted and replaced by `Likelihood` in the future.
-class SafeSearchAnnotationLikelihood(enum.IntEnum):
-    UNKNOWN = 1
-    VERY_UNLIKELY = 2
-    UNLIKELY = 3
-    POSSIBLE = 4
-    LIKELY = 5
-    VERY_LIKELY = 6
+        self.adult: Likelihood = Likelihood[data["adult"]]
+        self.spoof: Likelihood = Likelihood[data["spoof"]]
+        self.medical: Likelihood = Likelihood[data["medical"]]
+        self.violence: Likelihood = Likelihood[data["violence"]]
+        self.racy: Likelihood = Likelihood[data["racy"]]
 
 
 def get_base64_from_image(
