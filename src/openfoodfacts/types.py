@@ -131,7 +131,7 @@ class Facet(str, enum.Enum):
 
         elif isinstance(value, str):
             if value not in Facet.__members__:
-                raise ValueError("unknown Facet: %s", value)
+                raise ValueError(f"unknown Facet: {value}")
             return cls[value]
 
 
@@ -881,9 +881,7 @@ class APIConfig(BaseModel):
                 "username/password and access_token are mutually exclusive"
             )
         if self.session_cookie and self.access_token:
-            raise ValueError(
-                "session_cookie and access_token are mutually exclusive"
-            )
+            raise ValueError("session_cookie and access_token are mutually exclusive")
         return self
 
     @model_validator(mode="after")

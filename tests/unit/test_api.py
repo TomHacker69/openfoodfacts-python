@@ -1,10 +1,9 @@
 import json
 import re
 
+import openfoodfacts
 import pytest
 import requests_mock
-
-import openfoodfacts
 
 TEST_USER_AGENT = "test_off_python"
 
@@ -402,6 +401,100 @@ class TestProducts:
             }
 
 
+class TestFacet:
+    """Unit tests for api.FacetResource and its methods."""
+
+    def test_get_facet(self):
+        api = openfoodfacts.API(user_agent=TEST_USER_AGENT)
+        response_data = {
+            "count": 10,
+            "tags": [{"name": "Beverages", "id": "en:beverages"}],
+        }
+        with requests_mock.mock() as mock:
+            mock.get(
+                "https://world.openfoodfacts.org/facets/categories",
+                json=response_data,
+            )
+            res = api.facet.get("category")
+            assert res == response_data
+            assert mock.last_request.qs == {
+                "json": ["1"],
+                "page": ["1"],
+                "page_size": ["20"],
+            }
+
+    def test_get_facet_enum_with_hyphenated_plural(self):
+        api = openfoodfacts.API(user_agent=TEST_USER_AGENT)
+        response_data = {"count": 5, "tags": []}
+        with requests_mock.mock() as mock:
+            mock.get(
+                "https://world.openfoodfacts.org/facets/data-quality-warnings",
+                json=response_data,
+            )
+            res = api.facet.get(
+                openfoodfacts.Facet.data_quality_warning,
+                page=2,
+                page_size=50,
+                sort="count",
+            )
+            assert res == response_data
+            assert mock.last_request.qs == {
+                "json": ["1"],
+                "page": ["2"],
+                "page_size": ["50"],
+                "sort": ["count"],
+            }
+
+    def test_get_facet_invalid(self):
+        api = openfoodfacts.API(user_agent=TEST_USER_AGENT)
+        with pytest.raises(ValueError, match="unknown Facet: invalid_facet"):
+            api.facet.get("invalid_facet")
+
+    def test_get_products(self):
+        api = openfoodfacts.API(user_agent=TEST_USER_AGENT)
+        response_data = {"count": 1, "products": [{"code": "123"}]}
+        with requests_mock.mock() as mock:
+            mock.get(
+                "https://world.openfoodfacts.org/facets/categories/en:beverages",
+                json=response_data,
+            )
+            res = api.facet.get_products("category", "en:beverages")
+            assert res == response_data
+            assert mock.last_request.qs == {
+                "json": ["1"],
+                "page": ["1"],
+                "page_size": ["25"],
+            }
+
+    def test_get_products_with_fields_and_sort(self):
+        api = openfoodfacts.API(user_agent=TEST_USER_AGENT)
+        response_data = {
+            "count": 1,
+            "products": [{"code": "123", "product_name": "Juice"}],
+        }
+        with requests_mock.mock() as mock:
+            mock.get(
+                "https://world.openfoodfacts.org/facets/labels/en:organic",
+                json=response_data,
+            )
+            res = api.facet.get_products(
+                openfoodfacts.Facet.label,
+                "en:organic",
+                page=3,
+                page_size=10,
+                fields=["code", "product_name"],
+                sort_by="popularity",
+            )
+            assert res == response_data
+            assert mock.last_request.qs == {
+                "json": ["1"],
+                "page": ["3"],
+                "page_size": ["10"],
+                "fields": ["code,product_name"],
+                "sort_by": ["popularity"],
+            }
+
+
 class TestFolksonomy:
     """Unit tests for api.FolksonomyResource and its methods."""
 
@@ -471,9 +564,7 @@ class TestFolksonomy:
             assert len(res.json()) == 5
 
     def test_add(self):
-        api = openfoodfacts.API(
-            user_agent=TEST_USER_AGENT, access_token="test_token"
-        )
+        api = openfoodfacts.API(user_agent=TEST_USER_AGENT, access_token="test_token")
         code = "3017620422003"
         key = "test:tag"
         value = "test_value"
@@ -494,9 +585,7 @@ class TestFolksonomy:
             assert len(res.json()) == 0
 
     def test_update(self):
-        api = openfoodfacts.API(
-            user_agent=TEST_USER_AGENT, access_token="test_token"
-        )
+        api = openfoodfacts.API(user_agent=TEST_USER_AGENT, access_token="test_token")
         code = "3017620422003"
         key = "test:tag"
         value = "updated_value"
@@ -506,9 +595,7 @@ class TestFolksonomy:
                 text="{}",
                 status_code=200,
             )
-            res = api.folksonomy.update(
-                product=code, key=key, value=value, version=2
-            )
+            res = api.folksonomy.update(product=code, key=key, value=value, version=2)
             assert res.request.json() == {
                 "product": code,
                 "k": key,
@@ -520,9 +607,7 @@ class TestFolksonomy:
             assert len(res.json()) == 0
 
     def test_delete(self):
-        api = openfoodfacts.API(
-            user_agent=TEST_USER_AGENT, access_token="test_token"
-        )
+        api = openfoodfacts.API(user_agent=TEST_USER_AGENT, access_token="test_token")
         code = "3017620422003"
         key = "test:tag"
         with requests_mock.mock() as mock:
