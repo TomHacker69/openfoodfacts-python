@@ -1,7 +1,6 @@
 import re
 
 import pytest
-
 from openfoodfacts.taxonomy import (
     Taxonomy,
     TaxonomyNode,
@@ -314,3 +313,24 @@ class TestTaxonomy:
         item_nodes = [taxonomy[item] for item in items]
         output_nodes = [taxonomy[o] for o in output]
         assert taxonomy.find_deepest_nodes(item_nodes) == output_nodes
+
+    def test_from_dict_missing_parent(self):
+        taxonomy = Taxonomy.from_dict(
+            {
+                "en:child": {
+                    "name": {"en": "Child"},
+                    "parents": ["en:missing-parent", "en:existing-parent"],
+                },
+                "en:existing-parent": {
+                    "name": {"en": "Existing Parent"},
+                },
+            }
+        )
+        assert len(taxonomy["en:child"].parents) == 1
+        assert taxonomy["en:child"].parents[0].id == "en:existing-parent"
+        assert taxonomy["en:existing-parent"].children == [taxonomy["en:child"]]
+
+    def test_taxonomy_node_add_parents_none(self):
+        node = TaxonomyNode("en:item", names={"en": "Item"}, synonyms={})
+        node.add_parents([None])
+        assert node.parents == []

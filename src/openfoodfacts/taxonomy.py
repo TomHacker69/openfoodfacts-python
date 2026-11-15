@@ -251,7 +251,7 @@ class TaxonomyNode:
 
     def add_parents(self, parents: Iterable["TaxonomyNode"]):
         for parent in parents:
-            if parent not in self.parents:
+            if parent is not None and parent not in self.parents:
                 self.parents.append(parent)
                 parent.children.append(self)
 
@@ -432,7 +432,9 @@ class Taxonomy:
 
         for key, key_data in data.items():
             node = taxonomy[key]
-            parents = [taxonomy[ref] for ref in key_data.get("parents", [])]
+            parents = [
+                taxonomy[ref] for ref in key_data.get("parents", []) if ref in taxonomy
+            ]
             node.add_parents(parents)
 
         return taxonomy
